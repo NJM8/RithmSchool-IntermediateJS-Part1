@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Events</title>
+</head>
+<body>
+	<!-- This first button is used for directly adding an event to an html element with an attribute -->
+	<!-- <button class="first_button" onclick="firstClick()">Click me first!</button> -->
+	<button class="first_button">Click me first!</button>
+	<button class="second_button">Click me second!</button>
+	<button class="third_button">Click me third!</button>
+	<script type="text/javascript">
+		// // option one to directly add an event to an html element using an attribute
+		// function firstClick(){
+		// 	alert("You clicked the first button!");
+		// }
+
+		// // option two to attached a function to an element
+		// let secondButton = document.querySelector(".second_button");
+		// secondButton.onclick = function(){
+		// 	alert("You pressed the second button!");
+		// }	
+
+		// // option three - using an event listener
+		// let thirdButton = document.querySelector(".third_button");
+		// thirdButton.addEventListener("click", function(){
+		// 	alert("You clicked the third button!");
+		// })
+
+		var buttons = document.getElementsByTagName("button");
+
+		// this will return an error because buttons is an array
+		// buttons.addEventListener("click", function(){
+		// 	alert("You just clicked a button");
+		// })
+
+		// this is the proper way to add an event to all the buttons, however you will be unable to remove this event listener in the same manner because we are using an anonymous function
+		// for (let i = 0; i < buttons.length; i++) {
+		// 	buttons[i].addEventListener('click', function(){
+		// 		alert('You just clicked a button');
+		// 	})
+		// }
+
+		// Here is the best way to do things
+		function alertData(){
+			alert('You just clicked a button');
+		}
+
+		for (let i = 0; i < buttons.length; i++) {
+			buttons[i].addEventListener('click', alertData);
+		}
+
+		for (let i = 0; i < buttons.length; i++) {
+			buttons[i].removeEventListener('click', alertData);
+		}
+	</script>
+</body>
+</html>
+
+
+
+
+
+
+
