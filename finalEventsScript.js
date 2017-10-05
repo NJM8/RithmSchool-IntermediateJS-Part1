@@ -9,7 +9,6 @@ window.onload = function(){
 	// When a user hovers over one of the colored boxes change the text to display the color that is being hovered over.
 	let selectedColorDisplay = document.querySelector('.selected');
 	let colors = document.querySelector('section');
-	console.log(selectedColorDisplay);
 	colors.addEventListener('mouseover',function(event){
 		selectedColorDisplay.innerHTML = event.target.className;
 	})
@@ -23,6 +22,48 @@ window.onload = function(){
 
 	// Append your new div to the page to the section tag.
 	colors.appendChild(newDiv);
+
+	let startButton = document.querySelector('.race-button');
+	let car1 = document.querySelector('.car1');
+	let car2 = document.querySelector('.car2');
+	car1.style.marginLeft = 0;
+	car2.style.marginLeft = 0;
+
+	function resetRace(car1, car2){
+		clearTimeout(car1.timer);
+		clearTimeout(car2.timer);
+		car1.style.marginLeft = 0;
+		car2.style.marginLeft = 0;
+		startButton.disabled = false;
+	}
+
+	startButton.addEventListener("click", function(){
+    	startButton.disabled = true;
+
+    	car1.timer = setInterval(function(){
+    		car1.style.marginLeft = parseInt(car1.style.marginLeft) + Math.random() * 60 + 'px';
+    		if ((parseInt(car1.style.marginLeft) + car1.clientWidth) > window.innerWidth) {
+    			alert('Car one wins!');
+    			resetRace(car1, car2);
+    		}
+    	}, 100)
+
+    	car2.timer = setInterval(function(){
+    		car2.style.marginLeft = parseInt(car2.style.marginLeft) + Math.random() * 60 + 'px';
+    		if ((parseInt(car2.style.marginLeft) + car2.clientWidth) > window.innerWidth) {
+    			alert('Car two wins!');
+    			resetRace(car1, car2);
+    		}
+    	}, 100)
+	});
+
 }
+
+
+
+
+
+
+
 
 
