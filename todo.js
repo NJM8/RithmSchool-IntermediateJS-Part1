@@ -1,13 +1,17 @@
 
 window.onload = function(){
+	let input = document.querySelector('#todoText');
+
+	input.addEventListener('keyup', function(event){
+		event.preventDefault();
+		if (event.keyCode === 13) {
+			document.querySelector('#addNewTodo').click();
+		}
+	})
+	
 	let addTodoButton = document.querySelector('#addNewTodo');
 
-	function markCompleted(todo){
-		todo.style.textDecoration = 'line-through';
-	}
-
 	addTodoButton.onclick = function(){
-		let input = document.querySelector('#todoText');
 		let newTodoText = input.value;
 
 		if (newTodoText === '') {
@@ -20,7 +24,21 @@ window.onload = function(){
 		let todoList = document.querySelector('#list');
 		todoList.appendChild(newTodo);
 		input.value = '';
-
-
+		canMarkCompleted(newTodo);
 	}
+
+	let canMarkCompleted = function(todo){
+		todo.addEventListener('click', function(){
+			todo.style.textDecoration = 'line-through';
+			canUnmarkCompleted(todo);
+		})
+	}
+
+	let canUnmarkCompleted = function(todo){
+		todo.addEventListener('click', function(){
+			todo.style.textDecoration = '';
+			canMarkCompleted(todo);
+		})
+	}
+
 }
