@@ -4,7 +4,7 @@ window.onload = function(){
 	let addTodoButton = document.querySelector('#addNewTodo');
 	let input = document.querySelector('#todoText');
 
-	var addNewTodo = function(newTodoText) {
+	var addNewTodo = function(newTodoText, isCompleted) {
 		let newTodo = document.createElement('li');
 		let todoList = document.querySelector('#list');
 
@@ -12,13 +12,29 @@ window.onload = function(){
 		todoList.appendChild(newTodo);
 		input.value = '';
 		canMarkCompleted(newTodo);
-		console.log(todos);
+
+		if (isCompleted) {
+			newTodo.style.textDecoration = 'line-through';
+		}
+	}
+
+	var saveTodo = function(newTodoText){
+		todos.push({todo: newTodoText, isCompleted: false});
+		localStorage.setItem('todos', JSON.stringify(todos));
 	}
 
 	var canMarkCompleted = function(todo){
 		todo.title = 'Click to mark todo completed, double click to delete';
 		todo.addEventListener('click', function(){
 			todo.style.textDecoration = 'line-through';
+			for (let i = 0; i < todos.length; i++) {
+				if (todos[i].todo === todo.innerText) {
+					todos[i].isCompleted = true;
+					localStorage.setItem('todos', JSON.stringify(todos));
+					console.log(todos);
+					console.log(JSON.parse(localStorage.getItem('todos')))
+				}
+			}
 			canUnmarkCompleted(todo);
 		})
 
@@ -31,6 +47,12 @@ window.onload = function(){
 		todo.title = 'Click to mark todo uncompleted, double click to delete';
 		todo.addEventListener('click', function(){
 			todo.style.textDecoration = '';
+			for (let i = 0; i < todos.length; i++) {
+				if (todos[i].todo === todo.innerText) {
+					todos[i].isCompleted = false;
+					localStorage.setItem('todos', JSON.stringify(todos));
+				}
+			}
 			canMarkCompleted(todo);
 		})
 
@@ -42,7 +64,7 @@ window.onload = function(){
 	var removeTodo = function(todo){
 		todo.remove();
 		todos.forEach(function(element, index){
-			if (element === todo.innerHTML) {
+			if (element.todo === todo.innerHTML) {
 				todos.splice(index, 1);
 			}
 		})
@@ -52,7 +74,7 @@ window.onload = function(){
 	if (localStorage.getItem('todos')) {
 		todos = JSON.parse(localStorage.getItem('todos'));
 		todos.forEach(function(element){
-			addNewTodo(element);
+			addNewTodo(element.todo, element.isCompleted);
 		})
 	}
 
@@ -72,9 +94,7 @@ window.onload = function(){
 		}
 
 		addNewTodo(newTodoText);
-
-		todos.push(newTodoText);
-		localStorage.setItem('todos', JSON.stringify(todos));
+		saveTodo(newTodoText);
 	}
 }
 
