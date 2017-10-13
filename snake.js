@@ -5,7 +5,7 @@ var width = 0;
 var height = 0;
 var currentDirection = '';
 var stateHistory = [];
-var length = 10;
+var lastRender = 0;
 
 var reSize = function(){
 	width = window.innerWidth * 2;
@@ -17,7 +17,7 @@ var reSize = function(){
 window.onresize = reSize();
 reSize();
 
-ctx.fillStyle = 'red';
+ctx.fillStyle = '#4db6ac';
 
 var state = {
 	x: width / 2, 
@@ -34,7 +34,8 @@ var keyMap = {
 	37: 'left', 
 	39: 'right',
 	38: 'up',
-	40: 'down'
+	40: 'down', 
+	32: 'space'
 }
 
 var oppositeDirections = {
@@ -45,7 +46,8 @@ var oppositeDirections = {
 }
 
 function keyDown(event){
-	var key = keyMap[event.keyCode];
+	var key = keyMap[event.keyCode];	
+
 	if (oppositeDirections[key] === currentDirection) {
 		return;
 	}
@@ -78,15 +80,15 @@ function update(progress){
 	}
 
 	if (state.x > width) {
-		state.x -= width;
+		endGame();
 	} else if (state.x < 0) {
-		state.x += width;
+		endGame();
 	}
 
 	if (state.y > height) {
-		state.y -= height;
+		endGame();
 	} else if (state.y < 0) {
-		state.y += height;
+		endGame();
 	}
 }
 
@@ -94,7 +96,7 @@ function draw(){
 	ctx.clearRect(0, 0, width, height);
 
 	stateHistory.unshift([state.x, state.y]);
-	stateHistory.length = 200;
+	stateHistory.length = 20;
 	stateHistory.forEach(function(element){
 		ctx.fillRect(element[0] - 5, element[1] - 5, 12, 12);
 	})
@@ -110,6 +112,34 @@ function loop(timeStamp){
 	window.requestAnimationFrame(loop);
 }
 
-var lastRender = 0;
+function startGame(){
+	stateHistory.length = 0;
+	for (value in state.pressedKeys) {
+		if (state.pressedKeys[value]){
+			state.pressedKeys[value] = false;
+		}
+	}
+	state.x = width / 2;
+	state.y = height / 2;
 
-window.requestAnimationFrame(loop);
+	window.requestAnimationFrame(loop);
+
+	window.setTimeout(function(){
+		alert('Welcome to snake! Hit ok and press a direction to start, if you collide with yourself or the walls the game is over. Enjoy!');
+	}, 100);
+}
+
+function endGame(){
+	alert('The end, your score was ' + stateHistory.length + ', better luck next time!');
+	startGame();
+}
+
+startGame();
+
+
+
+
+
+
+
+
