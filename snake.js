@@ -6,6 +6,8 @@ var height = 0;
 var currentDirection = '';
 var stateHistory = [];
 var lastRender = 0;
+var mouse = undefined;
+var length = 1;
 
 var reSize = function(){
 	width = window.innerWidth * 2;
@@ -45,7 +47,29 @@ var oppositeDirections = {
 	'down': 'up'
 }
 
+function detectCollision(){
+	var snakeHead = stateHistory[0];
+
+	if (snakeHead[0] - 5 < mouse[0] - 5 + 20 && 
+		snakeHead[0] - 5 + 20 > mouse[0] - 5 &&
+		snakeHead[1] - 5 < mouse[1] - 5 + 20 &&
+		snakeHead[1] - 5 + 20 > mouse[1] - 5) {
+		length += 1;
+		mouse = undefined;
+	}
+
+	for (let i = 1; i < stateHistory.length; i++) {
+		if (snakeHead[0] - 5 < stateHistory[i][0] - 5 + 20 && 
+			snakeHead[0] - 5 + 20 > stateHistory[i][0] - 5 &&
+			snakeHead[1] - 5 < stateHistory[i][1] - 5 + 20 &&
+			snakeHead[1] - 5 + 20 > stateHistory[i][1] - 5) {
+			endGame();
+		}
+	}
+}
+
 function keyDown(event){
+	document.getElementById('message').style.display = 'none';
 	var key = keyMap[event.keyCode];	
 
 	if (oppositeDirections[key] === currentDirection) {
@@ -96,10 +120,16 @@ function draw(){
 	ctx.clearRect(0, 0, width, height);
 
 	stateHistory.unshift([state.x, state.y]);
-	stateHistory.length = 20;
+	stateHistory.length = length;
 	stateHistory.forEach(function(element){
-		ctx.fillRect(element[0] - 5, element[1] - 5, 12, 12);
+		ctx.fillRect(element[0] - 5, element[1] - 5, 20, 20);
 	})
+
+	if (mouse === undefined) {
+		mouse = [Math.random() * width, Math.random() * height];
+	}
+
+	ctx.fillRect(mouse[0] - 5, mouse[1] - 5, 20, 20);
 }
 
 function loop(timeStamp){
@@ -107,6 +137,8 @@ function loop(timeStamp){
 
 	update(progress);
 	draw();
+	detectCollision();
+
 
 	lastRender = timeStamp;
 	window.requestAnimationFrame(loop);
@@ -125,12 +157,25 @@ function startGame(){
 	window.requestAnimationFrame(loop);
 
 	window.setTimeout(function(){
-		alert('Welcome to snake! Hit ok and press a direction to start, if you collide with yourself or the walls the game is over. Enjoy!');
+		var message = 'Welcome to snake! Try to catch the mouse. Hit ok and press a direction to start, if you collide with yourself or the walls the game is over. Press any key to start, enjoy!';
+		var messageDiv = document.getElementById('message');
+		messageDiv.innerText = message;
+		messageDiv.style.display = 'block';
+		console.log(messageDiv);
 	}, 100);
 }
 
 function endGame(){
-	alert('The end, your score was ' + stateHistory.length + ', better luck next time!');
+	window.setTimeout(function(){
+		var message = 'The end, your score was ' + stateHistory.length + ', better luck next time!';
+		var messageDiv = document.getElementById('message');
+		messageDiv.innerText = message;
+		messageDiv.style.display = 'block';
+	}, 5000);
+
+	length = 1;
+	stateHistory.length = 0;
+	mouse = undefined;
 	startGame();
 }
 
