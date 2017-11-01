@@ -31,8 +31,6 @@ window.onload = function(){
 				if (todos[i].todo === todo.innerText) {
 					todos[i].isCompleted = true;
 					localStorage.setItem('todos', JSON.stringify(todos));
-					console.log(todos);
-					console.log(JSON.parse(localStorage.getItem('todos')))
 				}
 			}
 			canUnmarkCompleted(todo);

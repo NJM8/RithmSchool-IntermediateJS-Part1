@@ -1,13 +1,14 @@
 
 var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext('2d');
-var width = 0;
-var height = 0;
+var width = 500;
+var height = 500;
 var currentDirection = '';
-var stateHistory = [];
-var lastRender = 0;
+var snake = [];
 var mouse = undefined;
-var length = 1;
+var playing = false;
+var myGame = undefined;
+var step = 20;
 
 var reSize = function(){
 	width = window.innerWidth * 2;
@@ -48,29 +49,53 @@ var oppositeDirections = {
 }
 
 function detectCollision(){
-	var snakeHead = stateHistory[0];
+	var snakeHead = snake[0];
 
 	if (snakeHead[0] - 5 < mouse[0] - 5 + 20 && 
 		snakeHead[0] - 5 + 20 > mouse[0] - 5 &&
 		snakeHead[1] - 5 < mouse[1] - 5 + 20 &&
 		snakeHead[1] - 5 + 20 > mouse[1] - 5) {
+		var newBlock = snake[snake.length - 1];
+		console.log(newBlock);
+		if (newBlock[2] === 'left') {
+			newBlock[0] -= step;
+		}
+		if (newBlock[2] === 'right') {
+			newBlock[0] += step;
+		}
+		if (newBlock[2] === 'up') {
+			newBlock[1] -= step;
+		}
+		if (newBlock[2] === 'down') {
+			newBlock[1] += step;
+		}
+		console.log(snake);
+		snake.push(newBlock);		
 		length += 1;
 		mouse = undefined;
 	}
 
-	for (let i = 1; i < stateHistory.length; i++) {
-		if (snakeHead[0] - 5 < stateHistory[i][0] - 5 + 20 && 
-			snakeHead[0] - 5 + 20 > stateHistory[i][0] - 5 &&
-			snakeHead[1] - 5 < stateHistory[i][1] - 5 + 20 &&
-			snakeHead[1] - 5 + 20 > stateHistory[i][1] - 5) {
-			endGame();
-		}
-	}
+	// for (let i = 1; i < snake.length; i++) {
+	// 	if (snakeHead[0] - 5 < snake[i][0] - 5 + 20 && 
+	// 		snakeHead[0] - 5 + 20 > snake[i][0] - 5 &&
+	// 		snakeHead[1] - 5 < snake[i][1] - 5 + 20 &&
+	// 		snakeHead[1] - 5 + 20 > snake[i][1] - 5) {
+	// 		endGame();
+	// 	}
+	// }
 }
 
 function keyDown(event){
 	document.getElementById('message').style.display = 'none';
-	var key = keyMap[event.keyCode];	
+	var key = keyMap[event.keyCode];
+
+	if (key === undefined) {
+		return;
+	}
+
+	if (key === 'space' && !playing) {
+		startGame();
+	}
 
 	if (oppositeDirections[key] === currentDirection) {
 		return;
@@ -82,50 +107,55 @@ function keyDown(event){
 	}
 	state.pressedKeys[key] = true;
 	currentDirection = key;
+
+	if (snake[0].length === 2 && key !== 'space') {
+		snake[0].push(key);
+	}
 }
 
 window.addEventListener('keydown', keyDown, false);
 
-function update(progress){
-	if (state.pressedKeys.left) {
-		state.x -= progress;
-	}
+function update(timeStamp){
+	if (Math.round(timeStamp) % 5 === 0) {
+		var previousDirection;
+		var nextDirection = currentDirection;
 
-	if (state.pressedKeys.right) {
-		state.x += progress;
-	}
+		for (let i = 0; i < snake.length; i++) {
+			previousDirection = snake[i][2];
+			snake[i][2] = nextDirection;
+			if (snake[i][2] === 'left') {
+				snake[i][0] -= step;
+			}
 
-	if (state.pressedKeys.up) {
-		state.y -= progress;
-	}
+			if (snake[i][2] === 'right') {
+				snake[i][0] += step;
+			}
 
-	if (state.pressedKeys.down) {
-		state.y += progress;
-	}
+			if (snake[i][2] === 'up') {
+				snake[i][1] -= step;
+			}
+			if (snake[i][2] === 'down') {
+				snake[i][1] += step;
+			}
+			nextDirection = previousDirection;	
+		}
 
-	if (state.x > width) {
-		endGame();
-	} else if (state.x < 0) {
-		endGame();
-	}
-
-	if (state.y > height) {
-		endGame();
-	} else if (state.y < 0) {
-		endGame();
+		if (snake[0] > width || snake[0] < 0 || snake[1] > height || snake[1] < 0) {
+			endGame();
+		}
+	} else {
+		return;
 	}
 }
 
 function draw(){
 	ctx.clearRect(0, 0, width, height);
 
-	stateHistory.unshift([state.x, state.y]);
-	stateHistory.length = length;
-	stateHistory.forEach(function(element){
+	snake.forEach(function(element){
 		ctx.fillRect(element[0] - 5, element[1] - 5, 20, 20);
 	})
 
-	if (mouse === undefined) {
+	if (mouse === undefined && playing) {
 		mouse = [Math.random() * width, Math.random() * height];
 	}
 
@@ -133,19 +163,17 @@ function draw(){
 }
 
 function loop(timeStamp){
-	var progress = (timeStamp - lastRender) / 3;
-
-	update(progress);
+	update(timeStamp);
 	draw();
 	detectCollision();
 
-
-	lastRender = timeStamp;
-	window.requestAnimationFrame(loop);
+	myGame = requestAnimationFrame(loop);
 }
 
 function startGame(){
-	stateHistory.length = 0;
+	snake.length = 0; 
+	playing = true;
+
 	for (value in state.pressedKeys) {
 		if (state.pressedKeys[value]){
 			state.pressedKeys[value] = false;
@@ -153,30 +181,30 @@ function startGame(){
 	}
 	state.x = width / 2;
 	state.y = height / 2;
+	snake[0] = [state.x, state.y];
 
-	window.requestAnimationFrame(loop);
+	draw();
+	
+	var message = 'Welcome to snake! Try to catch the mouse. Hit ok and press a direction to start, if you collide with yourself or the walls the game is over. Press any key to start, enjoy!';
+	var messageDiv = document.getElementById('message');
+	messageDiv.innerText = message;
+	messageDiv.style.display = 'block';
 
-	window.setTimeout(function(){
-		var message = 'Welcome to snake! Try to catch the mouse. Hit ok and press a direction to start, if you collide with yourself or the walls the game is over. Press any key to start, enjoy!';
-		var messageDiv = document.getElementById('message');
-		messageDiv.innerText = message;
-		messageDiv.style.display = 'block';
-		console.log(messageDiv);
-	}, 100);
+	myGame = requestAnimationFrame(loop);
 }
 
 function endGame(){
-	window.setTimeout(function(){
-		var message = 'The end, your score was ' + stateHistory.length + ', better luck next time!';
-		var messageDiv = document.getElementById('message');
-		messageDiv.innerText = message;
-		messageDiv.style.display = 'block';
-	}, 5000);
+	cancelAnimationFrame(myGame);
 
-	length = 1;
-	stateHistory.length = 0;
+	playing = false;
+
+	var message = 'The end, your score was ' + snake.length + ', better luck next time! Press space to start over.';
+	var messageDiv = document.getElementById('message');
+	messageDiv.innerText = message;
+	messageDiv.style.display = 'block';
+
+	snake.length = 0;
 	mouse = undefined;
-	startGame();
 }
 
 startGame();
